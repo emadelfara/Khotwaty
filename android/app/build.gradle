@@ -21,4 +21,9 @@ android {
         versionName flutter.versionName
     }
 }
+
+dependencies {
+    implementation "androidx.core:core-ktx:1.15.0"
+}
+
 flutter { source "../.." }
