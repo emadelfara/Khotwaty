@@ -22,6 +22,7 @@ class MainActivity : FlutterActivity() {
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "isSensorAvailable" -> result.success(hasStepSensor())
+                    "requiresActivityPermission" -> result.success(Build.VERSION.SDK_INT >= 29)
                     "startTracking" -> {
                         if (Build.VERSION.SDK_INT >= 29 &&
                             ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED) {
