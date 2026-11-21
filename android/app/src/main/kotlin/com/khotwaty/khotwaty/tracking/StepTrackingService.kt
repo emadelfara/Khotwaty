@@ -42,13 +42,21 @@ class StepTrackingService : Service(), SensorEventListener {
             val calories = distance * weight * 0.5
             val history = JSONArray(prefs.getString("history", "[]") ?: "[]")
             val records = mutableListOf<Map<String, Any>>()
+            var hasToday = false
             for (i in 0 until history.length()) {
                 val item = history.optJSONObject(i) ?: continue
+                if (item.optString("date") == date) hasToday = true
                 records.add(mapOf(
                     "date" to item.optString("date"),
                     "steps" to item.optInt("steps"),
                     "distanceKm" to item.optDouble("distanceKm"),
                     "calories" to item.optDouble("calories")
+                ))
+            }
+            if (!hasToday) {
+                records.add(mapOf(
+                    "date" to date, "steps" to steps,
+                    "distanceKm" to distance, "calories" to calories
                 ))
             }
             val sensor = (context.getSystemService(Context.SENSOR_SERVICE) as SensorManager)
@@ -93,6 +101,7 @@ class StepTrackingService : Service(), SensorEventListener {
 
     private fun startTracking() {
         if (stepSensor == null) {
+            prefs.edit().putBoolean("trackingEnabled", false).apply()
             stopSelf()
             return
         }
@@ -131,7 +140,6 @@ class StepTrackingService : Service(), SensorEventListener {
             if (delta > 0) editor.putInt("todaySteps", prefs.getInt("todaySteps", 0) + delta)
             lastSensorValue = total
         } else {
-            // The sensor total resets after a device reboot. Keep today's accumulated steps.
             lastSensorValue = total
         }
         editor.putFloat("lastSensorValue", lastSensorValue).apply()
