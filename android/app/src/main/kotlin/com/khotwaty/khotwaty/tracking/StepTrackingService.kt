@@ -99,6 +99,7 @@ class StepTrackingService : Service(), SensorEventListener {
         startForeground(NOTIFICATION_ID, buildNotification())
         prefs.edit().putBoolean("trackingEnabled", true).apply()
         currentDate = prefs.getString("activeDate", today()) ?: today()
+        lastSensorValue = prefs.getFloat("lastSensorValue", -1f)
         sensorManager.unregisterListener(this)
         sensorManager.registerListener(this, stepSensor, SensorManager.SENSOR_DELAY_NORMAL)
         refreshNotificationAndWidget()
@@ -130,10 +131,10 @@ class StepTrackingService : Service(), SensorEventListener {
             if (delta > 0) editor.putInt("todaySteps", prefs.getInt("todaySteps", 0) + delta)
             lastSensorValue = total
         } else {
-            // Sensor total resets after a device reboot. Keep today's accumulated steps.
+            // The sensor total resets after a device reboot. Keep today's accumulated steps.
             lastSensorValue = total
         }
-        editor.apply()
+        editor.putFloat("lastSensorValue", lastSensorValue).apply()
         saveTodayToHistory()
         refreshNotificationAndWidget()
     }
