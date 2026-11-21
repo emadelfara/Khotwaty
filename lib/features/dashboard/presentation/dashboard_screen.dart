@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/formatters.dart';
@@ -37,10 +38,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     setState(() { _snapshot = value; _loading = false; });
   }
 
+  Future<bool> _requestPermissions() async {
+    final activity = await Permission.activityRecognition.request();
+    if (!activity.isGranted) return false;
+    await Permission.notification.request();
+    return true;
+  }
+
   Future<void> _toggleTracking() async {
     if (_snapshot.isTracking) {
       await _repository.stop();
     } else {
+      final granted = await _requestPermissions();
+      if (!granted) {
+        if (mounted) _showMessage('اسمح للتطبيق بالوصول إلى النشاط البدني لتشغيل عداد الخطوات.');
+        return;
+      }
       final started = await _repository.start();
       if (!started && mounted) {
         _showMessage(_snapshot.sensorAvailable
@@ -140,21 +153,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 18),
           Row(children: [
-            Expanded(child: _MetricCard(
-              icon: Icons.route_rounded, title: 'المسافة',
+            Expanded(child: _MetricCard(icon: Icons.route_rounded, title: 'المسافة',
               value: Formatters.km(_snapshot.distanceKm), unit: 'كم')),
             const SizedBox(width: 12),
-            Expanded(child: _MetricCard(
-              icon: Icons.local_fire_department_rounded, title: 'السعرات',
-              value: Formatters.calories(_snapshot.calories), unit: 'كيلوكالوري')),
+            Expanded(child: _MetricCard(icon: Icons.local_fire_department_rounded,
+              title: 'السعرات', value: Formatters.calories(_snapshot.calories), unit: 'كيلوكالوري')),
           ]),
           const SizedBox(height: 12),
-          _MetricCard(
-            icon: Icons.flag_rounded, title: 'المتبقي لهدفك',
+          _MetricCard(icon: Icons.flag_rounded, title: 'المتبقي لهدفك',
             value: Formatters.steps((_snapshot.steps >= AppConstants.dailyGoal
                 ? 0 : AppConstants.dailyGoal - _snapshot.steps)),
-            unit: 'خطوة', wide: true,
-          ),
+            unit: 'خطوة'),
           const SizedBox(height: 20),
           const Text('حالة المستشعر', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
           const SizedBox(height: 7),
@@ -172,14 +181,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 class _MetricCard extends StatelessWidget {
   const _MetricCard({
-    required this.icon, required this.title, required this.value,
-    required this.unit, this.wide = false,
+    required this.icon, required this.title, required this.value, required this.unit,
   });
   final IconData icon;
   final String title;
   final String value;
   final String unit;
-  final bool wide;
 
   @override
   Widget build(BuildContext context) => Card(
