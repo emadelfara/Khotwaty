@@ -31,6 +31,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     final today = _records.isNotEmpty ? _records.last.steps : 0;
     final difference = today - yesterday;
     final maxSteps = _records.fold<int>(0, (a, b) => a > b.steps ? a : b.steps);
+    final chartMax = (maxSteps * 1.2).clamp(1000, double.infinity).toDouble();
     return Scaffold(
       appBar: AppBar(title: const Text('إحصائياتك')),
       body: RefreshIndicator(
@@ -44,7 +45,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 ? const Center(child: Text('ابدأ تسجيل خطواتك لعرض الرسم البياني'))
                 : BarChart(BarChartData(
                     alignment: BarChartAlignment.spaceAround,
-                    maxY: (maxSteps * 1.2).clamp(1000, double.infinity),
+                    maxY: chartMax,
                     borderData: FlBorderData(show: false),
                     gridData: const FlGridData(show: false),
                     titlesData: FlTitlesData(
@@ -70,8 +71,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         BarChartRodData(
                           toY: steps, width: 18, borderRadius: BorderRadius.circular(6),
                           color: AppTheme.accent,
-                          backDrawRodData: BackgroundBarChartRodData(
-                            show: true, toY: 10000, color: Colors.white.withOpacity(.035)),
                         ),
                       ]);
                     }),
