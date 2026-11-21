@@ -102,7 +102,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF29202A), Color(0xFF171922), Color(0xFF151922)],
+                colors: [Color(0xFF2B171B), Color(0xFF171922), Color(0xFF151922)],
                 begin: Alignment.topRight, end: Alignment.bottomLeft,
               ),
               borderRadius: BorderRadius.circular(28),
