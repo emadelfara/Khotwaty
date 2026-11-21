@@ -39,8 +39,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<bool> _requestPermissions() async {
-    final activity = await Permission.activityRecognition.request();
-    if (!activity.isGranted) return false;
+    if (await _repository.requiresActivityPermission()) {
+      final activity = await Permission.activityRecognition.request();
+      if (!activity.isGranted) return false;
+    }
     await Permission.notification.request();
     return true;
   }
@@ -70,7 +72,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final progress = (_snapshot.steps / AppConstants.dailyGoal).clamp(0.0, 1.0);
+    final progress = (_snapshot.steps / AppConstants.dailyGoal).clamp(0.0, 1.0).toDouble();
     return RefreshIndicator(
       onRefresh: _refresh,
       child: ListView(
