@@ -46,6 +46,16 @@ class TrackerRepository {
     }
   }
 
+  Future<bool> requiresActivityPermission() async {
+    try {
+      return await _channel.invokeMethod<bool>('requiresActivityPermission') ?? false;
+    } on PlatformException {
+      return false;
+    } on MissingPluginException {
+      return false;
+    }
+  }
+
   Future<void> saveProfile({required double heightCm, required double weightKg}) async {
     try {
       await _channel.invokeMethod<void>('saveProfile', {
